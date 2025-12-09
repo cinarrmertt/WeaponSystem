@@ -5,18 +5,11 @@ using Cursor = UnityEngine.Cursor;
 
 public class MouseLook : MonoBehaviour
 {
-    public static MouseLook Instance; //diğer scriptler üzerinden erişim (Sadece tek bir objede kullanılır)
-
-    private void Awake()
-    {
-        Instance = this;
-    }
-    
     [Header("References")]
     [SerializeField] Transform _target;
-    [SerializeField] Transform _cameraParent;
+    public Transform _cameraParent;
     
-    [Header("Variables")]
+    [Header("Look")]
     [SerializeField] [Range(1,10)] float sensitivity;
     [SerializeField] private float minY;
     [SerializeField] private float maxY;
@@ -30,7 +23,7 @@ public class MouseLook : MonoBehaviour
         Cursor.visible = false;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         MouseController();
     }

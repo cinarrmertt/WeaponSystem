@@ -3,13 +3,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController Instance;
-
-    private void Awake()
-    {
-        Instance = this;
-    }
-    
     [Header("References")]
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private Transform _playerTransform;
