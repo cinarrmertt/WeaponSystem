@@ -49,6 +49,11 @@ public class WeaponManager : MonoBehaviour
    [SerializeField] private int _45cal;
    [SerializeField] private int _12ga;
    
+   [Header("Muzzle Flash")]
+   [SerializeField] private Transform weaponTip;
+   [SerializeField] private GameObject muzzleFlash;
+   [SerializeField] private ParticleSystem bulletShells;
+   
    private void Update()
    {
       Inputs();
@@ -85,6 +90,8 @@ public class WeaponManager : MonoBehaviour
          if (fireHit.transform.GetComponent<Rigidbody>() != null)
             fireHit.transform.GetComponent<Rigidbody>().AddForce(-fireHit.normal * 100);
       }
+      
+      CreateMuzzleFlash();
    }
 
    public void EndFire()
@@ -92,6 +99,14 @@ public class WeaponManager : MonoBehaviour
       isFire = false;
       _animationController.SetBool(Fire1, isFire);
       _animationController.SetBool(Fire2, isFire);
+   }
+
+   void CreateMuzzleFlash()
+   {
+      GameObject muzzleFlashCopy = Instantiate(muzzleFlash, weaponTip.position, weaponTip.rotation , weaponTip);
+      Destroy(muzzleFlashCopy,5);
+      
+      bulletShells.Play();
    }
 
    void StartReload()
