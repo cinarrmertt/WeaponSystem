@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform _playerTransform;
     
     [Header("Movement")]
+    public bool isWalking;
+    public bool isRunning;
     [SerializeField] private float walkSpeed;
     [SerializeField] private float runSpeed;
     [SerializeField] private float jumpPower;
@@ -26,6 +28,7 @@ public class PlayerController : MonoBehaviour
         Movement();
         Gravity();
         Jump();
+        CheckMovement();
     }
 
     void Movement()
@@ -36,6 +39,28 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = _playerTransform.right * horizontal + _playerTransform.forward * vertical;
         
         _characterController.Move(movement * TotalSpeed() * Time.deltaTime);
+    }
+
+    void CheckMovement()
+    {
+        if ((horizontal != 0 || vertical != 0) || (horizontal != 0 && vertical != 0))
+        {
+            if (TotalSpeed() == runSpeed)
+            {
+                isRunning = true;
+                isWalking = false;
+            }
+            else if (TotalSpeed() == walkSpeed)
+            {
+                isRunning = false;
+                isWalking = true;
+            }
+        }
+        else
+        {
+            isWalking = false;
+            isRunning = false;
+        }
     }
 
     void Gravity()

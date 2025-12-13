@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class WeaponManager : MonoBehaviour
 {
@@ -54,6 +55,10 @@ public class WeaponManager : MonoBehaviour
    [SerializeField] private GameObject muzzleFlash;
    [SerializeField] private ParticleSystem bulletShells;
    
+   [Header("Bullet Holes & Particles")]
+   [SerializeField] GameObject[]  bulletHoles;
+
+   
    private void Update()
    {
       Inputs();
@@ -89,6 +94,13 @@ public class WeaponManager : MonoBehaviour
       {
          if (fireHit.transform.GetComponent<Rigidbody>() != null)
             fireHit.transform.GetComponent<Rigidbody>().AddForce(-fireHit.normal * 100);
+
+         GameObject copyBulletHole = Instantiate(bulletHoles[Random.Range(0, bulletHoles.Length)], fireHit.point,
+            Quaternion.LookRotation(fireHit.normal));
+         
+         copyBulletHole.transform.parent = fireHit.transform;
+
+         Destroy(copyBulletHole, 15f);
       }
       
       CreateMuzzleFlash();
