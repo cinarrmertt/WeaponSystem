@@ -1,6 +1,8 @@
 using System;
+using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using UnityEngine.UI;
 
 public class WeaponManager : MonoBehaviour
 {
@@ -57,6 +59,10 @@ public class WeaponManager : MonoBehaviour
    
    [Header("Bullet Holes & Particles")]
    [SerializeField] GameObject[]  bulletHoles;
+   
+   [Header("Indicators")]
+   public TextMeshProUGUI currentAmmoText;
+   public TextMeshProUGUI totalAmmoText;
 
    
    private void Update()
@@ -68,6 +74,8 @@ public class WeaponManager : MonoBehaviour
    void Inputs()
    {
       _weaponTransform.localRotation = _mouseLook._cameraParent.localRotation;
+      currentAmmoText.text = currentAmmo.ToString();
+      totalAmmoText.text = totalAmmo.ToString();
 
       if (Input.GetMouseButtonDown(0) && !isReload && currentAmmo > 0 && Time.time > fireCounter && availability)
          StartFire();
@@ -188,5 +196,28 @@ public class WeaponManager : MonoBehaviour
    {
       
    }
-   
+
+   public void AddAmmo(WeaponManager.AmmoTypes ammoType, int amount)
+   {
+      if (type == AmmoTypes._5_56)
+      {
+         _5_56 += amount;
+      }
+      else if (type == AmmoTypes._7_62)
+      {
+         _7_62 += amount;
+      }
+      else if (type == AmmoTypes._9mm)
+      {
+         _9mm += amount;
+      }
+      else if (type == AmmoTypes._45cal)
+      {
+         _45cal += amount;
+      }
+      else if (type == AmmoTypes._12ga)
+      {
+         _12ga += amount;
+      }
+   }
 }

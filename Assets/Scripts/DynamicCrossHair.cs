@@ -16,6 +16,8 @@ public class DynamicCrossHair : MonoBehaviour
     [Header("UI")]
     [SerializeField] private RectTransform crossHair;
 
+    [HideInInspector] public bool available;
+
     private void Update()
     {
         Inputs();
@@ -33,7 +35,7 @@ public class DynamicCrossHair : MonoBehaviour
             SetMax();
         }
 
-        if (_playerController.isRunning)
+        if ((_playerController.isRunning && !available) || (_playerController.isRunning || !available))
         {
             SetDeActive();
         }
