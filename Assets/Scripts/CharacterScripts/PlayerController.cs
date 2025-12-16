@@ -87,7 +87,7 @@ public class PlayerController : MonoBehaviour
             _gravityVector.y = Mathf.Sqrt(jumpPower * -1 * gravity / 5000);
         }
     }
-    float TotalSpeed()
+    public float TotalSpeed()
     {
         if (Input.GetKey(KeyCode.LeftShift) && !_weaponManager.isFire)
             return runSpeed;
