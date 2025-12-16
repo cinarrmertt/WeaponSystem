@@ -14,8 +14,8 @@ public class MouseLook : MonoBehaviour
     [SerializeField] private float minY;
     [SerializeField] private float maxY;
 
-    private float x;
-    private float y;
+    private float X;
+    private float Y;
 
     private void Start()
     {
@@ -30,13 +30,18 @@ public class MouseLook : MonoBehaviour
 
     void MouseController()
     {
-        x = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime * 15;
-        y += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime * 15;
+        X += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime * 15;
+        Y += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime * 15;
+
+        Y = Mathf.Clamp(Y, minY, maxY);
         
-        y=Mathf.Clamp(y,minY,maxY);
-        
-        _cameraParent.localRotation = Quaternion.Euler(-y, 0, 0);
-        _target.Rotate(Vector3.up, x);
-        
+        _cameraParent.localRotation = Quaternion.Euler(-Y, 0, 0);
+        _target.localRotation = Quaternion.Euler(0, X, 0);
+    }
+
+    public void AddRecoil(float x , float y)
+    {
+        X += x;
+        Y += y;
     }
 }

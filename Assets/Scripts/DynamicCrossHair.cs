@@ -6,6 +6,7 @@ public class DynamicCrossHair : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerController _playerController;
+    [SerializeField] private WeaponManager _weaponManager;
     
     [Header("Crosshair Settings")]
     [SerializeField] private float maxSize;
@@ -35,7 +36,7 @@ public class DynamicCrossHair : MonoBehaviour
             SetMax();
         }
 
-        if ((_playerController.isRunning && !available) || (_playerController.isRunning || !available))
+        if (_playerController.isRunning || !available || _weaponManager.aim)
         {
             SetDeActive();
         }

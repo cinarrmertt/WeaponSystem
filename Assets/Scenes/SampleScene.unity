@@ -6471,9 +6471,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f22ecfd2904c76448a2c79244de75b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponManager
+  _playerController: {fileID: 1417977579}
   _mouseLook: {fileID: 1417977576}
-  _weaponTransform: {fileID: 334506686}
   _cameraController: {fileID: 1417977580}
+  _weaponTransform: {fileID: 334506686}
+  _currentWeaponParent: {fileID: 983502498}
   isFire: 0
   isReload: 0
   availability: 0
@@ -6482,6 +6484,7 @@ MonoBehaviour:
   Fire2: Fire2
   Reload: Reload
   WeaponDown: WeaponDown
+  Aim: Aim
   currentAmmo: 17
   maxAmmo: 17
   fireFreq: 0.4
@@ -6505,6 +6508,18 @@ MonoBehaviour:
   - {fileID: 4227595567785896485, guid: e2e34f8c2aded6240b9f94ee2cdd8e31, type: 3}
   currentAmmoText: {fileID: 314653422}
   totalAmmoText: {fileID: 1847059844}
+  aim: 0
+  originalPos: {x: 0.225, y: -0.08, z: 0.295}
+  aimPos: {x: 0, y: -0.08, z: 0.2}
+  originalRot: {x: -0.043023057, y: 0.16463257, z: 0.007188013, w: 0.98539}
+  aimRot: {x: 0, y: 0.004363309, z: 0, w: 0.99999046}
+  aimSpeed: 10
+  originalFOV: 60
+  aimFOV: 50
+  maxScatter: {x: 0.036074225, y: 0.03363976, z: 0.033639766, w: 0.9982161}
+  minScatter: {x: 0.00880202, y: 0.008649722, z: 0.008649722, w: 0.9998864}
+  maxRecoil: {x: 1, y: 0.5}
+  minRecoil: {x: -1, y: 0.25}
 --- !u!114 &334506688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6518,8 +6533,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DynamicCrossHair
   _playerController: {fileID: 1417977579}
+  _weaponManager: {fileID: 334506687}
   maxSize: 60
-  minSize: 20
+  minSize: 30
   currentSize: 0
   speed: 10
   crossHair: {fileID: 662348107}
@@ -6964,14 +6980,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 983502497}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.043023076, y: 0.16463251, z: 0.0071880133, w: 0.98539007}
+  m_LocalRotation: {x: 0.043023262, y: -0.16463251, z: -0.007188045, w: -0.98539007}
   m_LocalPosition: {x: 0.225, y: -0.08, z: 0.295}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2031763180}
   m_Father: {fileID: 334506686}
-  m_LocalEulerAnglesHint: {x: -5, y: 18.97, z: 0}
+  m_LocalEulerAnglesHint: {x: 355, y: 18.97, z: -0.00000005356468}
 --- !u!1 &1126977087
 GameObject:
   m_ObjectHideFlags: 0
@@ -7373,6 +7389,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   _characterController: {fileID: 1417977577}
+  _weaponManager: {fileID: 334506687}
   _playerTransform: {fileID: 1417977578}
   isWalking: 0
   isRunning: 0

@@ -7,12 +7,16 @@ using UnityEngine.UI;
 public class WeaponManager : MonoBehaviour
 {
    [Header("References")]
+   public PlayerController _playerController;
    public MouseLook _mouseLook;
-   [SerializeField] private Transform _weaponTransform;
    public CameraController _cameraController;
+   private Camera _camera;
 
-   [Header("State")]
-   [SerializeField] private bool isFire;
+   [SerializeField] private Transform _weaponTransform;
+   [SerializeField] private Transform _currentWeaponParent;
+
+   [Header("State")] 
+   public bool isFire;
    [SerializeField] private bool isReload;
    public bool availability;
    
@@ -22,6 +26,7 @@ public class WeaponManager : MonoBehaviour
    [SerializeField] private string Fire2;
    [SerializeField] private string Reload;
    [SerializeField] private string WeaponDown;
+   [SerializeField] private string Aim;
    
    [Header("FireVariables")]
    [SerializeField] private int currentAmmo;
@@ -64,11 +69,39 @@ public class WeaponManager : MonoBehaviour
    public TextMeshProUGUI currentAmmoText;
    public TextMeshProUGUI totalAmmoText;
 
+   [Header("Aim")] 
+   public bool aim;
    
+   [SerializeField] private Vector3 originalPos;
+   [SerializeField] private Vector3 aimPos;
+   
+   [SerializeField] private Quaternion originalRot;
+   [SerializeField] private Quaternion aimRot;
+
+   [SerializeField] private float aimSpeed;
+
+   [SerializeField] private float originalFOV;
+   [SerializeField] private float aimFOV;
+
+   [Header("Bullet Scatter")] 
+   [SerializeField] private Quaternion maxScatter;
+   [SerializeField] private Quaternion minScatter;
+   private Quaternion currentScatter;
+
+   [Header("Recoil")] 
+   [SerializeField] private Vector2 maxRecoil;
+   [SerializeField] private Vector2 minRecoil;
+
+   private void Start()
+   {
+      _camera = _cameraController.cameraTransform.GetComponent<Camera>();
+   }
+
    private void Update()
    {
       Inputs();
       SetTotalAmmo();
+      SetAim();
    }
 
    void Inputs()
@@ -82,7 +115,14 @@ public class WeaponManager : MonoBehaviour
 
       if ((Input.GetKeyDown(KeyCode.R) || currentAmmo <= 0) && totalAmmo != 0 && currentAmmo != maxAmmo && !isFire)
          StartReload();
+
+      if (Input.GetMouseButtonDown(1))
+      {
+         SetAimBool();
+      }
    }
+
+   #region Fire
 
    void StartFire()
    {
@@ -97,7 +137,7 @@ public class WeaponManager : MonoBehaviour
       fireCounter = Time.time + fireFreq;
 
       if (Physics.Raycast(_cameraController.cameraTransform.position, 
-             _cameraController.cameraTransform.forward, 
+             SetScatter() * _cameraController.cameraTransform.forward,
              out fireHit, fireRange))
       {
          if (fireHit.transform.GetComponent<Rigidbody>() != null)
@@ -112,6 +152,7 @@ public class WeaponManager : MonoBehaviour
       }
       
       CreateMuzzleFlash();
+      SetRecoil();
    }
 
    public void EndFire()
@@ -128,6 +169,40 @@ public class WeaponManager : MonoBehaviour
       
       bulletShells.Play();
    }
+
+   Quaternion SetScatter()
+   {
+      if (_playerController.isWalking)
+      {
+         currentScatter = Quaternion.Euler(Random.Range(-maxScatter.eulerAngles.x, maxScatter.eulerAngles.x),
+            Random.Range(-maxScatter.eulerAngles.y, maxScatter.eulerAngles.y),
+            Random.Range(-maxScatter.eulerAngles.z, maxScatter.eulerAngles.z));
+      }
+      else if (aim)
+      {
+         currentScatter = Quaternion.Euler(0, 0, 0);
+      }
+      else
+      {
+         currentScatter = Quaternion.Euler(Random.Range(-minScatter.eulerAngles.x, minScatter.eulerAngles.x),
+            Random.Range(-minScatter.eulerAngles.y, minScatter.eulerAngles.y),
+            Random.Range(-minScatter.eulerAngles.z, minScatter.eulerAngles.z));
+      }
+
+      return currentScatter;
+   }
+
+   void SetRecoil()
+   {
+      float X = Random.Range(maxRecoil.x, minRecoil.x);
+      float Y = Random.Range(maxRecoil.y, minRecoil.y);
+
+      _mouseLook.AddRecoil(X, Y);
+   }
+   
+   #endregion
+
+   #region Reload
 
    void StartReload()
    {
@@ -159,7 +234,7 @@ public class WeaponManager : MonoBehaviour
       else if (type == AmmoTypes._12ga)
          _12ga -= amount;
    }
-
+   
    void SetTotalAmmo()
    {
       if (type == AmmoTypes._5_56)
@@ -191,6 +266,38 @@ public class WeaponManager : MonoBehaviour
          return inverntoryAmount;
       }
    }
+
+   #endregion
+
+   #region Aim
+
+   void SetAimBool()
+   {
+      aim = !aim;
+   }
+
+   void SetAim()
+   {
+      if (aim)
+      {
+         _currentWeaponParent.localPosition =
+            Vector3.Lerp(_currentWeaponParent.localPosition, aimPos, aimSpeed * Time.deltaTime);
+         _currentWeaponParent.localRotation =
+            Quaternion.Lerp(_currentWeaponParent.localRotation, aimRot, aimSpeed * Time.deltaTime);
+         _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, aimFOV, aimSpeed * Time.deltaTime);
+      }
+      else
+      {
+         _currentWeaponParent.localPosition =
+            Vector3.Lerp(_currentWeaponParent.localPosition, originalPos, aimSpeed * Time.deltaTime);
+         _currentWeaponParent.localRotation =
+            Quaternion.Lerp(_currentWeaponParent.localRotation, originalRot, aimSpeed * Time.deltaTime);
+         _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, originalFOV, aimSpeed * Time.deltaTime);
+      }
+      _animationController.SetBool(Aim, aim);
+   }
+
+   #endregion
 
    public void CloseWeapon()
    {

@@ -5,8 +5,9 @@ public class PlayerController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private CharacterController _characterController;
+    [SerializeField] private WeaponManager _weaponManager;
     [SerializeField] private Transform _playerTransform;
-    
+
     [Header("Movement")]
     public bool isWalking;
     public bool isRunning;
@@ -88,7 +89,7 @@ public class PlayerController : MonoBehaviour
     }
     float TotalSpeed()
     {
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKey(KeyCode.LeftShift) && !_weaponManager.isFire)
             return runSpeed;
         else
             return walkSpeed;
