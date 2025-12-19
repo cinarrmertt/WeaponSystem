@@ -13,6 +13,13 @@ public class Recoil : MonoBehaviour
     [SerializeField] private Quaternion maxTargetRot;
     [SerializeField] private Quaternion minTargetRot;
     
+    [Header("")] 
+    [SerializeField] private Vector3 aimMaxTargetPos;
+    [SerializeField] private Vector3 aimMinTargetPos;
+
+    [SerializeField] private Quaternion aimMaxTargetRot;
+    [SerializeField] private Quaternion aimMinTargetRot;
+    
     private Vector3 targetPos; 
     private Vector3 originalPos;
 
@@ -59,11 +66,22 @@ public class Recoil : MonoBehaviour
 
     public void SetTarget()
     {
-        targetPos = originalPos + new Vector3(Random.Range(minTargetPos.x, maxTargetPos.x),
-            Random.Range(minTargetPos.y, maxTargetPos.y), Random.Range(minTargetPos.z, maxTargetPos.z));
-        targetRot = originalRot * Quaternion.Euler(Random.Range(minTargetRot.eulerAngles.x, maxTargetRot.eulerAngles.x),
-            Random.Range(minTargetRot.eulerAngles.y, maxTargetRot.eulerAngles.y),
-            Random.Range(minTargetRot.eulerAngles.z, maxTargetRot.eulerAngles.z));
+        if (WeaponManager.instance.aim)
+        {
+            targetPos = originalPos + new Vector3(Random.Range(aimMinTargetPos.x, aimMaxTargetPos.x),
+                Random.Range(aimMinTargetPos.y, aimMaxTargetPos.y), Random.Range(aimMinTargetPos.z, aimMaxTargetPos.z));
+            targetRot = originalRot * Quaternion.Euler(Random.Range(aimMinTargetRot.eulerAngles.x, aimMaxTargetRot.eulerAngles.x),
+                Random.Range(aimMinTargetRot.eulerAngles.y, aimMaxTargetRot.eulerAngles.y),
+                Random.Range(aimMinTargetRot.eulerAngles.z, aimMaxTargetRot.eulerAngles.z));
+        }
+        else
+        {
+            targetPos = originalPos + new Vector3(Random.Range(minTargetPos.x, maxTargetPos.x),
+                Random.Range(minTargetPos.y, maxTargetPos.y), Random.Range(minTargetPos.z, maxTargetPos.z));
+            targetRot = originalRot * Quaternion.Euler(Random.Range(minTargetRot.eulerAngles.x, maxTargetRot.eulerAngles.x),
+                Random.Range(minTargetRot.eulerAngles.y, maxTargetRot.eulerAngles.y),
+                Random.Range(minTargetRot.eulerAngles.z, maxTargetRot.eulerAngles.z));
+        }
         lerp = true;
     }
 }

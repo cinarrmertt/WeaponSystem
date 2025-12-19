@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class WeaponManager : MonoBehaviour
 {
+   public static WeaponManager  instance;
+   
    [Header("References")]
    public PlayerController _playerController;
    public MouseLook _mouseLook;
@@ -19,6 +21,10 @@ public class WeaponManager : MonoBehaviour
    public bool isFire;
    [SerializeField] private bool isReload;
    public bool availability;
+   
+   [Header("WeaponSlots")]
+   [SerializeField] private WeaponVariables weaponSlots_1;
+   [SerializeField] private WeaponVariables _weaponSlots_2;
    
    [Header("Animations")] 
    [SerializeField] private AnimationController _animationController;
@@ -93,6 +99,15 @@ public class WeaponManager : MonoBehaviour
    [SerializeField] private Vector2 maxRecoil;
    [SerializeField] private Vector2 minRecoil;
    [SerializeField] Recoil _cameraRecoil;
+   [SerializeField] private Recoil weaponRecoil;
+
+   [Header("ChangeWeapon")] 
+   [SerializeField] private WeaponVariables[] allWeapons;
+
+   private void Awake()
+   {
+      instance = this;
+   }
 
    private void Start()
    {
@@ -112,16 +127,20 @@ public class WeaponManager : MonoBehaviour
       currentAmmoText.text = currentAmmo.ToString();
       totalAmmoText.text = totalAmmo.ToString();
 
-      if (Input.GetMouseButtonDown(0) && !isReload && currentAmmo > 0 && Time.time > fireCounter && availability)
+      if (Input.GetMouseButton(0) && !isReload && currentAmmo > 0 && Time.time > fireCounter && availability)
          StartFire();
 
       if ((Input.GetKeyDown(KeyCode.R) || currentAmmo <= 0) && totalAmmo != 0 && currentAmmo != maxAmmo && !isFire)
          StartReload();
 
       if (Input.GetMouseButtonDown(1))
-      {
          SetAimBool();
-      }
+
+      if (Input.GetKeyDown(KeyCode.Alpha1) && weaponSlots_1 !=null)
+         ChangeWeapon(weaponSlots_1);
+      if (Input.GetKeyDown(KeyCode.Alpha2) && weaponSlots_1 !=null)
+         ChangeWeapon(_weaponSlots_2);
+      
    }
 
    #region Fire
@@ -156,6 +175,7 @@ public class WeaponManager : MonoBehaviour
       CreateMuzzleFlash();
       SetRecoil();
       _cameraRecoil.SetTarget();
+      weaponRecoil.SetTarget();
    }
 
    public void EndFire()
@@ -281,7 +301,7 @@ public class WeaponManager : MonoBehaviour
 
    void SetAim()
    {
-      if (aim)
+      if (aim && !isReload && availability)
       {
          _currentWeaponParent.localPosition =
             Vector3.Lerp(_currentWeaponParent.localPosition, aimPos, aimSpeed * Time.deltaTime);
@@ -302,9 +322,98 @@ public class WeaponManager : MonoBehaviour
 
    #endregion
 
+   #region Inventory
+
+   void ChangeWeapon(WeaponVariables weapon)
+   {
+      if (weapon.weaponParent != _currentWeaponParent)
+      {
+         _currentWeaponParent.gameObject.SetActive(false);
+         weapon.weaponParent.gameObject.SetActive(true);
+
+         _currentWeaponParent.GetComponent<WeaponVariables>().currentAmmo = currentAmmo;
+         
+         _currentWeaponParent = weapon.weaponParent;
+
+         _animationController = weapon.animationController;
+
+         currentAmmo = weapon.currentAmmo;
+         fireFreq = weapon.fireFreq;
+         fireRange = weapon.fireRange;
+
+         maxAmmo = weapon.maxAmmo;
+         type = weapon.type;
+
+         weaponTip = weapon.weaponTip;
+         muzzleFlash = weapon.muzzleFlash;
+         bulletShells = weapon.bulletShells;
+         
+         originalPos = weapon.originalPos;
+         aimPos = weapon.aimPos;
+         
+         originalRot = weapon.originalRot;
+         aimRot = weapon.aimRot;
+
+         aimSpeed = weapon.aimSpeed;
+
+         originalFOV = weapon.originalFOV;
+         aimFOV = weapon.aimFOV;
+
+         minScatter = weapon.minScatter;
+         maxScatter = weapon.maxScatter;
+
+         maxRecoil = weapon.maxRecoil;
+         minRecoil = weapon.minRecoil;
+         weaponRecoil = weapon.weaponRecoil;
+      }
+   }
+   
+   public void PickWeapon(string weaponName)
+   {
+      WeaponVariables selectedWeapon = null;
+
+      for (int i = 0; i < allWeapons.Length; i++)
+      {
+         if (allWeapons[i].weaponID == weaponName)
+         {
+            selectedWeapon =  allWeapons[i];
+         }  
+      }
+
+      if (_weaponSlots_2 == null)
+      {
+         _weaponSlots_2 = selectedWeapon;
+         ChangeWeapon(_weaponSlots_2);
+      }
+      else
+      {
+         if (_currentWeaponParent.GetComponent<WeaponVariables>().weaponID == weaponSlots_1.weaponID)
+         {
+            DropWeapon(weaponSlots_1);
+            weaponSlots_1 = selectedWeapon;
+            ChangeWeapon(weaponSlots_1);
+         }
+         else if (_currentWeaponParent.GetComponent<WeaponVariables>().weaponID == _weaponSlots_2.weaponID)
+         {
+            DropWeapon(_weaponSlots_2);
+            _weaponSlots_2 = selectedWeapon;
+            ChangeWeapon(_weaponSlots_2);
+         }
+      }
+   }
+
+   void DropWeapon(WeaponVariables weapon)
+   {
+      GameObject pickableWeapon = Instantiate(weapon.pickableWeapon, _currentWeaponParent.position,
+         _currentWeaponParent.rotation);
+      pickableWeapon.GetComponent<Rigidbody>()
+         .AddForce(pickableWeapon.transform.forward * 1000 + pickableWeapon.transform.up * 500);
+   }
+   #endregion
+
    public void CloseWeapon()
    {
-      
+     
    }
 
    public void AddAmmo(WeaponManager.AmmoTypes ammoType, int amount)

@@ -9,13 +9,18 @@ public class HeadBob : MonoBehaviour
 
     [Header("Variables")] 
     [SerializeField] private float bobFreq;
-    [SerializeField] private float horizontalMagnitude;
-    [SerializeField] private float verticalMagnitude;
     [SerializeField] private float lerpSpeed;
 
     private float walkingTime;
     private Vector3 targetVector;
 
+    [Header("Aim")]
+    [SerializeField] private float horizontalMagnitude;
+    [SerializeField] private float verticalMagnitude;
+    
+    [SerializeField] private float aimHorizontalMagnitude;
+    [SerializeField] private float aimVerticalMagnitude;
+    
     private void Update()
     {
         SetHeadBob();
@@ -48,11 +53,34 @@ public class HeadBob : MonoBehaviour
 
         if (time > 0f)
         {
-            horizontalOffset = Mathf.Cos(time * bobFreq * _playerController.TotalSpeed()) * horizontalMagnitude;
-            verticalOffset = Mathf.Cos(time * bobFreq * 2 * _playerController.TotalSpeed()) * verticalMagnitude;
+            horizontalOffset = Mathf.Cos(time * bobFreq * _playerController.TotalSpeed()) * TotalHorizontalMagnitude();
+            verticalOffset = Mathf.Cos(time * bobFreq * 2 * _playerController.TotalSpeed()) * TotalVerticalMagnitude();
 
             offset = headParent.right * horizontalOffset + headParent.up * verticalOffset;
         }
         return offset;
+    }
+
+    float TotalHorizontalMagnitude()
+    {
+        if (WeaponManager.instance.aim)
+        {
+            return aimHorizontalMagnitude;
+        }
+        else
+        {
+            return horizontalMagnitude;
+        }
+    }
+    float TotalVerticalMagnitude()
+    {
+        if (WeaponManager.instance.aim)
+        {
+            return aimVerticalMagnitude;
+        }
+        else
+        {
+            return verticalMagnitude;
+        }
     }
 }
