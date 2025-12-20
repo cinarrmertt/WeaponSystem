@@ -33,8 +33,9 @@ public class WeaponManager : MonoBehaviour
    [SerializeField] private string Reload;
    [SerializeField] private string WeaponDown;
    [SerializeField] private string Aim;
-   
+
    [Header("FireVariables")]
+   [SerializeField] private int bulletsAndOnce;
    [SerializeField] private int currentAmmo;
    [SerializeField] private int maxAmmo;
    [SerializeField] private float fireFreq;
@@ -93,6 +94,8 @@ public class WeaponManager : MonoBehaviour
    [Header("Bullet Scatter")] 
    [SerializeField] private Quaternion maxScatter;
    [SerializeField] private Quaternion minScatter;
+   [SerializeField] private Quaternion aimScatter;
+   
    private Quaternion currentScatter;
 
    [Header("Recoil")] 
@@ -136,9 +139,9 @@ public class WeaponManager : MonoBehaviour
       if (Input.GetMouseButtonDown(1))
          SetAimBool();
 
-      if (Input.GetKeyDown(KeyCode.Alpha1) && weaponSlots_1 !=null)
+      if (Input.GetKeyDown(KeyCode.Alpha1) && weaponSlots_1 !=null && !isReload)
          ChangeWeapon(weaponSlots_1);
-      if (Input.GetKeyDown(KeyCode.Alpha2) && weaponSlots_1 !=null)
+      if (Input.GetKeyDown(KeyCode.Alpha2) && weaponSlots_1 !=null && !isReload)
          ChangeWeapon(_weaponSlots_2);
       
    }
@@ -157,21 +160,23 @@ public class WeaponManager : MonoBehaviour
       currentAmmo--;
       fireCounter = Time.time + fireFreq;
 
-      if (Physics.Raycast(_cameraController.cameraTransform.position, 
-             SetScatter() * _cameraController.cameraTransform.forward,
-             out fireHit, fireRange, ~IgnoreLayer))
+      for (int j = 0; j < bulletsAndOnce; j++)
       {
-         if (fireHit.transform.GetComponent<Rigidbody>() != null)
-            fireHit.transform.GetComponent<Rigidbody>().AddForce(-fireHit.normal * 100);
+         if (Physics.Raycast(_cameraController.cameraTransform.position, 
+                SetScatter() * _cameraController.cameraTransform.forward,
+                out fireHit, fireRange, ~IgnoreLayer))
+         {
+            if (fireHit.transform.GetComponent<Rigidbody>() != null)
+               fireHit.transform.GetComponent<Rigidbody>().AddForce(-fireHit.normal * 100);
 
-         GameObject copyBulletHole = Instantiate(bulletHoles[Random.Range(0, bulletHoles.Length)], fireHit.point,
-            Quaternion.LookRotation(fireHit.normal));
+            GameObject copyBulletHole = Instantiate(bulletHoles[Random.Range(0, bulletHoles.Length)], fireHit.point,
+               Quaternion.LookRotation(fireHit.normal));
          
-         copyBulletHole.transform.parent = fireHit.transform;
+            copyBulletHole.transform.parent = fireHit.transform;
 
-         Destroy(copyBulletHole, 15f);
+            Destroy(copyBulletHole, 15f);
+         }
       }
-      
       CreateMuzzleFlash();
       SetRecoil();
       _cameraRecoil.SetTarget();
@@ -203,7 +208,9 @@ public class WeaponManager : MonoBehaviour
       }
       else if (aim)
       {
-         currentScatter = Quaternion.Euler(0, 0, 0);
+         currentScatter = Quaternion.Euler(Random.Range(-aimScatter.eulerAngles.x, aimScatter.eulerAngles.x),
+            Random.Range(-aimScatter.eulerAngles.y, aimScatter.eulerAngles.y),
+            Random.Range(-aimScatter.eulerAngles.z, aimScatter.eulerAngles.z));
       }
       else
       {
@@ -337,6 +344,7 @@ public class WeaponManager : MonoBehaviour
 
          _animationController = weapon.animationController;
 
+         bulletsAndOnce = weapon.bulletsAndOnce;
          currentAmmo = weapon.currentAmmo;
          fireFreq = weapon.fireFreq;
          fireRange = weapon.fireRange;
@@ -361,6 +369,7 @@ public class WeaponManager : MonoBehaviour
 
          minScatter = weapon.minScatter;
          maxScatter = weapon.maxScatter;
+         aimScatter = weapon.aimScatter;
 
          maxRecoil = weapon.maxRecoil;
          minRecoil = weapon.minRecoil;
@@ -372,13 +381,16 @@ public class WeaponManager : MonoBehaviour
    {
       WeaponVariables selectedWeapon = null;
 
-      for (int i = 0; i < allWeapons.Length; i++)
+      foreach (var weapon in allWeapons)
       {
-         if (allWeapons[i].weaponID == weaponName)
+         if (weapon.weaponID == weaponName)
          {
-            selectedWeapon =  allWeapons[i];
-         }  
+            selectedWeapon = weapon;
+            break;
+         }
       }
+      
+      if (selectedWeapon == null) return;
 
       if (_weaponSlots_2 == null)
       {
@@ -387,27 +399,50 @@ public class WeaponManager : MonoBehaviour
       }
       else
       {
-         if (_currentWeaponParent.GetComponent<WeaponVariables>().weaponID == weaponSlots_1.weaponID)
+         WeaponVariables currentInHand = _currentWeaponParent.GetComponentInChildren<WeaponVariables>();
+
+         if (currentInHand != null)
          {
-            DropWeapon(weaponSlots_1);
-            weaponSlots_1 = selectedWeapon;
-            ChangeWeapon(weaponSlots_1);
-         }
-         else if (_currentWeaponParent.GetComponent<WeaponVariables>().weaponID == _weaponSlots_2.weaponID)
-         {
-            DropWeapon(_weaponSlots_2);
-            _weaponSlots_2 = selectedWeapon;
-            ChangeWeapon(_weaponSlots_2);
+            // Eğer eldeki silah slot 1 ise
+            if (weaponSlots_1 != null && currentInHand.weaponID == weaponSlots_1.weaponID)
+            {
+               DropWeapon(weaponSlots_1);
+               weaponSlots_1 = selectedWeapon;
+               ChangeWeapon(weaponSlots_1);
+            }
+            // Eğer eldeki silah slot 2 ise
+            else if (_weaponSlots_2 != null && currentInHand.weaponID == _weaponSlots_2.weaponID)
+            {
+               DropWeapon(_weaponSlots_2);
+               _weaponSlots_2 = selectedWeapon;
+               ChangeWeapon(_weaponSlots_2);
+            }
          }
       }
    }
 
    void DropWeapon(WeaponVariables weapon)
    {
-      GameObject pickableWeapon = Instantiate(weapon.pickableWeapon, _currentWeaponParent.position,
-         _currentWeaponParent.rotation);
-      pickableWeapon.GetComponent<Rigidbody>()
-         .AddForce(pickableWeapon.transform.forward * 1000 + pickableWeapon.transform.up * 500);
+      if (weapon == null)
+      {
+         Debug.LogError("Hata: DropWeapon'a gönderilen 'weapon' verisi tamamen null!");
+         return;
+      }
+
+      if (weapon.pickableWeapon == null)
+      {
+         Debug.LogError("Hata: " + weapon.weaponID + " isimli silahın 'pickableWeapon' referansı Inspector'da boş!");
+         return;
+      }
+
+      GameObject pickable = Instantiate(weapon.pickableWeapon, _currentWeaponParent.position, _currentWeaponParent.rotation);
+        
+      Rigidbody rb = pickable.GetComponent<Rigidbody>();
+      if (rb != null)
+      {
+         rb.linearVelocity = Vector3.zero; // Önce hızı sıfırla
+         rb.AddForce(_currentWeaponParent.forward * 600 + _currentWeaponParent.up * 300);
+      }
    }
    #endregion
 

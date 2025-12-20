@@ -9,6 +9,7 @@ public class WeaponVariables : MonoBehaviour
     public AnimationController animationController;
 
     [Header("FireVariables")] 
+    public int bulletsAndOnce;
     public int currentAmmo;
     public float fireFreq;
     public float fireRange;
@@ -37,6 +38,7 @@ public class WeaponVariables : MonoBehaviour
     [Header("Bullet Scatter")] 
     public Quaternion maxScatter;
     public Quaternion minScatter;
+    public Quaternion aimScatter;
     
     [Header("Recoil")] 
     public Vector2 maxRecoil;
